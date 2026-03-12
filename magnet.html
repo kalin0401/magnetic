@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>전류와 자기장 탐지기 🐯</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f4f8; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .value { font-size: 48px; font-weight: 800; color: #ff7043; margin: 20px 0; }
+        .axis { display: flex; justify-content: space-around; color: #666; }
+        .btn { padding: 15px 30px; border: none; border-radius: 10px; background: #4dd0e1; color: white; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🧲 자기장 세기 (Total)</h2>
+    <div id="total" class="value">0.0</div>
+    <p>단위: μT (마이크로테슬라)</p>
+    
+    <div class="axis">
+        <div>X: <span id="mx">0</span></div>
+        <div>Y: <span id="my">0</span></div>
+        <div>Z: <span id="mz">0</span></div>
+    </div>
+    
+    <br><br>
+    <button class="btn" onclick="requestPermission()">센서 시작하기</button>
+</div>
+
+<script>
+    let offset = 0;
+
+    function requestPermission() {
+        // iOS 13+ 등에서 센서 권한 요청이 필요한 경우 처리
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+            DeviceMotionEvent.requestPermission()
+                .then(response => { if (response == 'granted') startSensor(); })
+                .catch(console.error);
+        } else {
+            startSensor();
+        }
+    }
+
+    function startSensor() {
+        // Magnetometer API (일부 최신 브라우저 지원) 또는 기본 센서 이벤트 사용
+        window.addEventListener('devicemotion', (event) => {
+            // 참고: 실제 정밀 자기장은 별도의 Magnetometer API가 필요하지만, 
+            // 대부분의 교육용 웹은 기본 센서 데이터를 시각화하는 방식으로 구현됩니다.
+            // 여기서는 시연용 구조를 보여드립니다.
+        });
+
+        // 실제 Chrome/Android 환경에서 동작하는 방식
+        if ('Magnetometer' in window) {
+            const sensor = new Magnetometer({frequency: 60});
+            sensor.addEventListener('reading', () => {
+                const x = sensor.x;
+                const y = sensor.y;
+                const z = sensor.z;
+                const total = Math.sqrt(x*x + y*y + z*z).toFixed(1);
+                
+                document.getElementById('mx').innerText = x.toFixed(1);
+                document.getElementById('my').innerText = y.toFixed(1);
+                document.getElementById('mz').innerText = z.toFixed(1);
+                document.getElementById('total').innerText = total;
+            });
+            sensor.start();
+        } else {
+            alert("이 브라우저에서는 자기장 센서 API를 지원하지 않습니다. (HTTPS 환경인지 확인해주세요!)");
+        }
+    }
+</script>
+</body>
+</html>
